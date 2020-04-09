@@ -1,0 +1,106 @@
+package screens;
+
+import java.awt.Color;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
+import java.io.IOException;
+import javax.swing.*;
+import java.awt.GridLayout;
+import com.sun.jna.platform.win32.*;
+
+public class Screen {
+	
+	public static void main(String args[]) throws IOException, InterruptedException, InstantiationException, IllegalAccessException, ClassNotFoundException, UnsupportedLookAndFeelException{
+		
+		int num_monit_agora,num_monit_antes;		
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();        
+        Frame frame_arr[] = new Frame[5];
+        
+        
+        for(int i=0; i < gs.length; i++){
+        	frame_arr[i] = new Frame();
+        	frame_arr[i].setVisible(true);
+        	frame_arr[i].setLocation(gs[i].getDefaultConfiguration().getBounds().x + frame_arr[i].getX(), gs[i].getDefaultConfiguration().getBounds().y + frame_arr[i].getY());        	
+        }
+	        
+	    WinDef.HWND hwnd = User32.INSTANCE.FindWindow("SunAwtFrame", "Transparent Window");
+	    int wl =  User32.INSTANCE.GetWindowLong(hwnd, WinUser.GWL_EXSTYLE);
+	    wl = wl | WinUser.WS_EX_LAYERED | WinUser.WS_EX_TRANSPARENT;
+	    User32.INSTANCE.SetWindowLong(hwnd, WinUser.GWL_EXSTYLE, wl);
+	    
+	    
+	    while(true){
+	    	Thread.sleep(5 * 1000);	    		    	
+	    	
+	    	boolean pular_iter=true;
+	    	GraphicsDevice[] gs_antigo = gs;	    	
+	    	
+	    	ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
+	    	gs = ge.getScreenDevices();
+	    	
+	    	num_monit_antes = gs_antigo.length;
+	    	num_monit_agora = ge.getScreenDevices().length;
+	    	
+	    	
+	    	if(num_monit_antes!=num_monit_agora){	    		
+	    		pular_iter = false;
+	    	}else{
+	    		for(int i=0; i < num_monit_antes; i++){	    			
+	    			if(frame_arr[i].getLocation().x != gs[i].getDefaultConfiguration().getBounds().x || frame_arr[i].getLocation().y != gs[i].getDefaultConfiguration().getBounds().y){	    				
+	    				pular_iter=false;
+	    			}
+	    		}
+	    	}
+	    	
+	    	if(pular_iter){	    		
+	    		continue;
+	    	}else{	    		
+	    		for(int i=0; i < num_monit_antes; i++)
+	    			frame_arr[i].dispose();
+	    		System.gc();
+	    		
+	    		for(int i=0; i < num_monit_agora; i++){
+	            	frame_arr[i] = new Frame();
+	            	frame_arr[i].setVisible(true);
+	            	frame_arr[i].setLocation(gs[i].getDefaultConfiguration().getBounds().x + frame_arr[i].getX(), gs[i].getDefaultConfiguration().getBounds().y + frame_arr[i].getY());        	
+	            }	    		
+	    		num_monit_antes=gs.length;	    			    		
+	    	}
+	    }
+	    
+	    //fim da main
+	}
+
+	
+	
+	
+	@SuppressWarnings({ "serial" })	
+    static class Frame extends JFrame{
+        public Frame() throws IOException{
+            super("Transparent Window");
+            
+            setUndecorated(true);
+            
+            setType(Type.UTILITY);
+            setBackground(new Color(0, 0, 0, 0));
+            setAlwaysOnTop(true);
+            JPanel panel = new JPanel(new GridLayout(8, 7, 1, 1)); //4, 4, 3, 3 60, 60, 3, 3
+
+            for (int i = 0; i <56 ; i++) { //24 2240
+                //JLabel l = new JLabel("rigofel", JLabel.CENTER);
+                //l.setSize(30, 30);
+                JLabel l = new JLabel("rigofel", JLabel.CENTER);
+                
+                l.setFont(l.getFont().deriveFont(20.0f));
+                panel.add(l);
+            }    
+            setContentPane(panel);
+            setOpacity((float) 0.2);   
+            getContentPane().setPreferredSize(Toolkit.getDefaultToolkit().getScreenSize());
+            getContentPane().setBackground(new Color(0.0f, 0.0f, 0.0f, 0.0f));
+            pack();            
+        }
+    }
+}
